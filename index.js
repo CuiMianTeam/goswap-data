@@ -7,8 +7,8 @@ const { SubscriptionClient } = require('subscriptions-transport-ws');
 
 // TODO: exchange will need to be replaced with new exchange subgraph once it's finished
 const graphAPIEndpoints = {
-	masterchef: 'https://api.thegraph.com/subgraphs/name/sushiswap/master-chef',
-	bar: 'https://api.thegraph.com/subgraphs/name/sushiswap/sushi-bar',
+	GoSwapPool: 'https://api.thegraph.com/subgraphs/name/sushiswap/master-chef',
+	stake: 'https://api.thegraph.com/subgraphs/name/sushiswap/sushi-stake',
 	timelock: 'https://api.thegraph.com/subgraphs/name/sushiswap/sushi-timelock',
 	maker: 'https://api.thegraph.com/subgraphs/name/sushiswap/sushi-maker',
 	exchange: 'https://api.thegraph.com/subgraphs/name/sushiswap/exchange',
@@ -43,16 +43,16 @@ module.exports = {
 				.catch(err => console.error(err))
 		}
 	},
-	sushi: {
+	GOT: {
 		info(blockNumber) {
-			let sushi_address = "0x6b3595068778dd592e39a122f4f5a5cf09c90fe2"
+			let GOT_address = "0x174a6b533bff8abb2c6f5b9053d782af97794445"
 			return pageResults({
 				api: graphAPIEndpoints.exchange,
 				query: {
 					entity: 'tokens',
 					selection: {
 						where: {
-							id: `\\"${sushi_address}\\"`
+							id: `\\"${GOT_address}\\"`
 						},
 						block: { number: blockNumber }
 					},
@@ -332,13 +332,13 @@ module.exports = {
 		},
 	},
 
-	masterchef: {
+	GoSwapPool: {
 		info() {
 			let mainnet_address = "0xc2edad668740f1aa35e4d8f227fb8e17dca888cd"
 			return pageResults({
-				api: graphAPIEndpoints.masterchef,
+				api: graphAPIEndpoints.GoSwapPool,
 				query: {
-					entity: 'masterChefs',
+					entity: 'GoSwapPools',
 					selection: {
 						where: {
 							id: `\\"${mainnet_address}\\"`,
@@ -389,7 +389,7 @@ module.exports = {
 			identifier = String(identifier);
 			let where = identifier ? identifier.includes("x") ? { pair: `\\"${identifier}\\"`, } : { id: `\\"${identifier}\\"`, } : {};
 			return pageResults({
-				api: graphAPIEndpoints.masterchef,
+				api: graphAPIEndpoints.GoSwapPool,
 				query: {
 					entity: 'pools',
 					selection: {
@@ -480,12 +480,12 @@ module.exports = {
 		}
 	},
 
-	bar: {
+	stake: {
 		info() {
 			return pageResults({
-				api: graphAPIEndpoints.bar,
+				api: graphAPIEndpoints.stake,
 				query: {
-					entity: 'bars',
+					entity: 'stakes',
 					properties: [
 						'decimals',
 						'name',
@@ -529,7 +529,7 @@ module.exports = {
 
 		user({ user = undefined }) {
 			return pageResults({
-				api: graphAPIEndpoints.bar,
+				api: graphAPIEndpoints.stake,
 				query: {
 					entity: 'users',
 					selection: {
@@ -538,7 +538,7 @@ module.exports = {
 						}
 					},
 					properties: [
-						'bar { sushiStaked, ratio, totalSupply }',
+						'stake { sushiStaked, ratio, totalSupply }',
 						'xSushi',
 						'xSushiIn',
 						'xSushiOut',
@@ -561,12 +561,12 @@ module.exports = {
 					]
 				}
 			})
-				.then(([{ bar, xSushi, xSushiIn, xSushiOut, xSushiMinted, xSushiBurned, xSushiOffset, xSushiAge, xSushiAgeDestroyed, sushiStaked, sushiStakedUSD, sushiHarvested, sushiHarvestedUSD, sushiOut, sushiIn, usdOut, usdIn, updatedAt, sushiOffset, usdOffset }]) =>
+				.then(([{ stake, xSushi, xSushiIn, xSushiOut, xSushiMinted, xSushiBurned, xSushiOffset, xSushiAge, xSushiAgeDestroyed, sushiStaked, sushiStakedUSD, sushiHarvested, sushiHarvestedUSD, sushiOut, sushiIn, usdOut, usdIn, updatedAt, sushiOffset, usdOffset }]) =>
 					({
 						// TODO: will need to figure out calculations for sushi earned and apy here once we figure out xSushi transfer issues in the subgraph
 						xSushi: Number(xSushi),
-						sushiStaked: xSushi * bar.ratio,
-						bar: bar
+						sushiStaked: xSushi * stake.ratio,
+						stake: stake
 					})
 				)
 				.catch(err => console.log(err));
